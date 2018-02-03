@@ -16,8 +16,18 @@ spec:
               containerPort: 5000
               protocol: "TCP"
           env:
-          - name: ETCD_HOST
+          - name: MONGO_HOST
             value: 'mongo'
+          - name: MONGO_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: mongo-secret
+                key: username
+          - name: MONGO_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mongo-secret
+                key: password
   replicas: 3
   triggers:
     - type: "ConfigChange"
