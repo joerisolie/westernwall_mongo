@@ -10,7 +10,7 @@ spec:
         name: westernwall-web
     spec:
       containers:
-      - image: joerisolie/westernwall:latest
+      - image: joerisolie/westernwall-mongo:latest
         name: westernwall-web
         ports:
         - name: http-server

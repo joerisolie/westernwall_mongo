@@ -10,7 +10,7 @@ spec:
     spec:
       containers:
         - name: "westernwall-web"
-          image: "westernwall/westernwall:latest"
+          image: "westernwall/westernwall-mongo:latest"
           ports:
             - name: http-server
               containerPort: 5000
@@ -28,7 +28,7 @@ spec:
           - "westernwall-web"
         from:
           kind: "ImageStreamTag"
-          name: "westernwall:latest"
+          name: "westernwall-mongo:latest"
   strategy:
     type: "Rolling"
   paused: false
