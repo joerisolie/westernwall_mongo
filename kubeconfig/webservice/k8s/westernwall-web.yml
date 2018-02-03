@@ -16,5 +16,5 @@ spec:
         - name: http-server
           containerPort: 5000
         env:
-        - name: ETCD_HOST
-          value: 'westernwall-etcd'
+        - name: MONGO_HOST
+          value: 'mongo'

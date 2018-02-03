@@ -17,7 +17,7 @@ spec:
               protocol: "TCP"
           env:
           - name: ETCD_HOST
-            value: 'westernwall-etcd'
+            value: 'mongo'
   replicas: 3
   triggers:
     - type: "ConfigChange"
