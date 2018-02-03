@@ -1,0 +1,20 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: westernwall-web
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        name: westernwall-web
+    spec:
+      containers:
+      - image: joerisolie/westernwall:latest
+        name: westernwall-web
+        ports:
+        - name: http-server
+          containerPort: 5000
+        env:
+        - name: ETCD_HOST
+          value: 'westernwall-etcd'

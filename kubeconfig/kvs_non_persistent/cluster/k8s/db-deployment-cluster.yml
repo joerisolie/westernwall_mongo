@@ -1,0 +1,54 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: westernetcd-etcd-cluster
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        name: westernetcd-etcd-cluster
+    spec:
+      containers:
+      - image: quay.io/coreos/etcd:v3.0.15
+        name: westernetcd-etcd
+        command:
+        - /usr/local/bin/etcd
+        - --name 
+        - $(MY_POD_NAME)
+        #
+        - --initial-advertise-peer-urls
+        - http://$(MY_POD_IP):2379
+        #
+        - --listen-peer-urls
+        - http://0.0.0.0:2379
+        #
+        - --listen-client-urls
+        - http://0.0.0.0:4001
+        #
+        - --advertise-client-urls
+        - http://$(MY_POD_IP):4001
+        #Discovery should use SSL, but not used at this moment due to x509 issues (no ca-certificates in container)
+        - --discovery
+        - http://discovery.etcd.io/79bcd5be0c6351fa1e57ad3da62736cb
+        env:
+          - name: MY_POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: MY_POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+        ports:
+          - name: serverport
+            containerPort: 2379
+          - name: clientport
+            containerPort: 4001
+        volumeMounts:
+          - mountPath: /etc/ssl/certs
+            name: certs        
+      volumes:
+      - name: certs
+        hostPath:
+          path: /usr/share/ca-certificates

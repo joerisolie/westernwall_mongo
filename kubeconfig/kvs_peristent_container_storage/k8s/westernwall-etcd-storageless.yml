@@ -1,0 +1,135 @@
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: westernwall-etcd
+spec:
+  serviceName: "westernwall-etcd"
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        name: westernwall-etcd
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - image: quay.io/coreos/etcd:v3.0.15
+        name: westernwall-etcd
+        env:
+          - name: MY_POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: INITIAL_CLUSTER_SIZE
+            value: "3"
+          - name: STATEFULSET_NAME
+            value: "westernwall-etcd"
+          - name: FULL_SERVICE_NAME
+            value: "westernwall-etcd.svc.cluster.local"
+          - name: CLEAN_DEPLOYMENT
+            value: "True"
+        lifecycle:
+          preStop:
+            exec:
+              command:
+                - "/bin/sh"
+                - "-ec"
+                - |
+                  EPS=""
+                  for i in $(seq 0 $((${INITIAL_CLUSTER_SIZE} - 1))); do
+                      EPS="${EPS}${EPS:+,}http://${STATEFULSET_NAME}-${i}.${STATEFULSET_NAME}.${FULL_SERVICE_NAME}:4001"
+                  done 
+                  export ETCDCTL_ENDPOINT=${EPS}
+
+                  member_hash() {
+                      etcdctl member list | grep http://${MY_POD_NAME}.${STATEFULSET_NAME}.${FULL_SERVICE_NAME}:2379 | cut -d':' -f1 | cut -d'[' -f1
+                  }
+
+                  echo "Removing ${MY_POD_NAME} from etcd cluster"
+                  etcdctl member remove $(member_hash)
+                  if [ $? -eq 0 ]; then
+                      # Make sure to delete the data dir
+                      rm -rf /var/run/etcd/*
+                  fi
+        command:
+          - "/bin/sh"
+          - "-ec"
+          - |
+            eps() {
+                EPS=""
+                for i in $(seq 0 $((${INITIAL_CLUSTER_SIZE} - 1))); do
+                    EPS="${EPS}${EPS:+,}http://${STATEFULSET_NAME}-${i}.${STATEFULSET_NAME}.${FULL_SERVICE_NAME}:4001"
+                done
+                echo ${EPS}
+            }
+
+            member_hash() {
+                etcdctl member list | grep http://${MY_POD_NAME}.${STATEFULSET_NAME}.${FULL_SERVICE_NAME}:2379 | cut -d':' -f1 | cut -d'[' -f1
+            }
+
+            # etcd-PET_ID
+            PET_ID=`echo ${MY_POD_NAME} | sed 's/.*-//'`
+
+            #Getting the hash for this member
+            export ETCDCTL_ENDPOINT=$(eps)
+            MEMBER_HASH=$(member_hash)
+
+            # adding a new member to existing cluster (assuming all initial pets are available)
+            # or adding a member which name already exists in the cluster
+            if [ "${PET_ID}" -ge ${INITIAL_CLUSTER_SIZE} ] || [ -n "${MEMBER_HASH}" ] || [ "${CLEAN_DEPLOYMENT}" == "False" ]; then
+                #TODO: Automatically detect whether we are deploying a new etcd cluster or changing an existing one.
+                # member already added? -> Member needs to be removed from the cluster config
+                if [ -n "${MEMBER_HASH}" ]; then
+                    etcdctl member remove ${MEMBER_HASH}
+                fi
+
+                echo "Adding new member"
+                etcdctl member add ${MY_POD_NAME} http://${MY_POD_NAME}.${STATEFULSET_NAME}.${FULL_SERVICE_NAME}:2379 | grep "^ETCD_" > /var/run/new_member_envs
+
+                if [ $? -ne 0 ]; then
+                    echo "Exiting"
+                    rm -f /var/run/new_member_envs
+                    exit 1
+                fi
+                
+                cat /var/run/new_member_envs
+                source /var/run/new_member_envs
+
+                exec etcd --name ${MY_POD_NAME} \
+                    --listen-peer-urls http://0.0.0.0:2379 \
+                    --listen-client-urls http://0.0.0.0:4001 \
+                    --advertise-client-urls http://${MY_POD_NAME}.${STATEFULSET_NAME}.${FULL_SERVICE_NAME}:4001 \
+                    --data-dir /var/run/etcd/default.etcd \
+                    --initial-advertise-peer-urls http://${MY_POD_NAME}.${STATEFULSET_NAME}.${FULL_SERVICE_NAME}:2379 \
+                    --initial-cluster ${ETCD_INITIAL_CLUSTER} \
+                    --initial-cluster-state ${ETCD_INITIAL_CLUSTER_STATE}
+            else
+                #Presumably a new cluster deployment
+                for i in $(seq 0 $((${INITIAL_CLUSTER_SIZE} - 1))); do
+                    while true; do
+                        echo "Waiting for ${STATEFULSET_NAME}-${i}.${STATEFULSET_NAME}.${FULL_SERVICE_NAME} to come up"
+                        ping -W 1 -c 1 ${STATEFULSET_NAME}-${i}.${STATEFULSET_NAME}.${FULL_SERVICE_NAME} > /dev/null && break
+                        sleep 1s
+                    done
+                done
+
+                PEERS=""
+                for i in $(seq 0 $((${INITIAL_CLUSTER_SIZE} - 1))); do
+                    PEERS="${PEERS}${PEERS:+,}${STATEFULSET_NAME}-${i}=http://${STATEFULSET_NAME}-${i}.${STATEFULSET_NAME}.${FULL_SERVICE_NAME}:2379"
+                done
+
+                # join member
+                exec etcd --name ${MY_POD_NAME} \
+                    --initial-advertise-peer-urls http://${MY_POD_NAME}.${STATEFULSET_NAME}.${FULL_SERVICE_NAME}:2379 \
+                    --listen-peer-urls http://0.0.0.0:2379 \
+                    --listen-client-urls http://0.0.0.0:4001 \
+                    --advertise-client-urls http://${MY_POD_NAME}.${STATEFULSET_NAME}.${FULL_SERVICE_NAME}:4001 \
+                    --initial-cluster-token etcd-cluster-1 \
+                    --initial-cluster ${PEERS} \
+                    --initial-cluster-state new \
+                   --data-dir /var/run/etcd/default.etcd
+            fi
+        ports:
+          - name: serverport
+            containerPort: 2379
+          - name: clientport
+            containerPort: 4001

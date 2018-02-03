@@ -1,0 +1,36 @@
+kind: "DeploymentConfig"
+apiVersion: "v1"
+metadata:
+  name: "westernwall-web"
+spec:
+  template:
+    metadata:
+      labels:
+        name: "westernwall-web"
+    spec:
+      containers:
+        - name: "westernwall-web"
+          image: "westernwall/westernwall:latest"
+          ports:
+            - name: http-server
+              containerPort: 5000
+              protocol: "TCP"
+          env:
+          - name: ETCD_HOST
+            value: 'westernwall-etcd'
+  replicas: 3
+  triggers:
+    - type: "ConfigChange"
+    - type: "ImageChange"
+      imageChangeParams:
+        automatic: true
+        containerNames:
+          - "westernwall-web"
+        from:
+          kind: "ImageStreamTag"
+          name: "westernwall:latest"
+  strategy:
+    type: "Rolling"
+  paused: false
+  revisionHistoryLimit: 3
+  minReadySeconds: 0

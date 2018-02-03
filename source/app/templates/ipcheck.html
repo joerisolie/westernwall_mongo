@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+	<div class="page-header">
+		<h1>This is my IP Info</h1>
+	</div>
+	<div class="row">
+		<p>
+			<h3>My IP Info is:</h3>
+			{% for ipinfo in ipinfos %}
+				{{ ipinfo }}<br />
+			{% endfor %}
+		</p>
+		   <h3>My IP Access route is:</h3>
+		   {% for ip_access_ip in ip_access_route %}
+				{{ ip_access_ip }}<br />
+		   {% endfor %}
+		<p>
+			<h3>Your IP is:</h3>
+		    {{ yourip }}
+		</p>
+	</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+kind: "DeploymentConfig"
+apiVersion: "v1"
+metadata:
+  name: "westernwall-etcd"
+spec:
+  template:
+    metadata:
+      labels:
+        name: "westernwall-etcd"
+    spec:
+      containers:
+        - name: "westernwall-etcd"
+          image: "quay.io/coreos/etcd:v3.0.15"
+          ports:
+          - name: serverport
+            containerPort: 2379
+          - name: clientport
+            containerPort: 4001
+          command:
+          - /usr/local/bin/etcd
+          - --advertise-client-urls
+          - http://westernetcd-etcd:4001,http://westernetcd-etcd:2379
+          - --listen-client-urls
+          - http://0.0.0.0:4001,http://0.0.0.0:2379
+  replicas: 1
+  triggers:
+    - type: "ConfigChange"
+  strategy:
+    type: "Rolling"
+  paused: false
+  revisionHistoryLimit: 1
+  minReadySeconds: 0

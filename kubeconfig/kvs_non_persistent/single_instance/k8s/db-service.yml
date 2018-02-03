@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: westernetcd-etcd
+  name: westernetcd-etcd
+spec:
+  ports:
+    - name: serverport
+      port: 2379
+      targetPort: 2379
+    - name: clientport
+      port: 4001
+      targetPort: 4001
+  selector:
+    name: westernetcd-etcd

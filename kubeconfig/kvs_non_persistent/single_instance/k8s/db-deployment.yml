@@ -1,0 +1,25 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: westernetcd-etcd
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: westernetcd-etcd
+    spec:
+      containers:
+      - image: quay.io/coreos/etcd:v3.0.15
+        name: westernetcd-etcd
+        command:
+        - /usr/local/bin/etcd
+        - --advertise-client-urls
+        - http://westernetcd-etcd:4001,http://westernetcd-etcd:2379
+        - --listen-client-urls
+        - http://0.0.0.0:4001,http://0.0.0.0:2379
+        ports:
+        - name: serverport
+          containerPort: 2379
+        - name: clientport
+          containerPort: 4001

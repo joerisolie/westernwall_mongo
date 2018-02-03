@@ -1,0 +1,62 @@
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: westernwall-etcd
+spec:
+  serviceName: "westernwall-etcd"
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        name: westernwall-etcd
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - image: quay.io/coreos/etcd:v3.0.15
+        name: westernwall-etcd
+        command:
+        - /usr/local/bin/etcd
+        - --name 
+        - $(MY_POD_NAME)
+        #
+        - --initial-cluster-state=new
+        - --initial-cluster
+        - westernwall-etcd-0=http://westernwall-etcd-0.westernwall-etcd.westernwall.svc.cluster.local:2379,westernwall-etcd-1=http://westernwall-etcd-1.westernwall-etcd.westernwall.svc.cluster.local:2379,westernwall-etcd-2=http://westernwall-etcd-2.westernwall-etcd.westernwall.svc.cluster.local:2379
+        # 
+        - --initial-advertise-peer-urls
+        - http://$(MY_POD_NAME).westernwall-etcd.westernwall.svc.cluster.local:2379
+        #
+        - --listen-peer-urls
+        - http://0.0.0.0:2379
+        #
+        - --listen-client-urls
+        - http://0.0.0.0:4001
+        #
+        - --advertise-client-urls
+        - http://$(MY_POD_NAME).westernwall-etcd.westernwall.svc.cluster.local:4001
+        #
+        - --data-dir
+        - /var/lib/etcd/$(MY_POD_NAME)
+        env:
+          - name: MY_POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+        ports:
+          - name: serverport
+            containerPort: 2379
+          - name: clientport
+            containerPort: 4001
+        volumeMounts:
+          - name: westernwall-etcd-pvol-claim-ceph
+            mountPath: /var/lib/etcd
+  volumeClaimtemplates:
+  - metadata:
+      name: westernwall-etcd-pvol-claim-ceph
+      annotations:
+        volume.beta.kubernetes.io/storage-class: ceph
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 1Gi

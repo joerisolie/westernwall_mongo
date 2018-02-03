@@ -1,0 +1,12 @@
+ApiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+ name: westernwall-etcd-pvol-claim 
+ annotations:
+   volume.beta.kubernetes.io/storage-class: heketi  
+spec:
+ accessModes:
+  - ReadWriteMany
+ resources:
+   requests:
+     storage: 2Gi
