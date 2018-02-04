@@ -2,7 +2,6 @@ kind: NetworkPolicy
 apiVersion: extensions/v1beta1
 metadata:
   name: allow-http
-  namespace: westernwall
 spec:
  podSelector:
    matchLabels:
@@ -11,6 +10,6 @@ spec:
  - from: 
    - podSelector: {}
    - namespaceSelector: {}
-- ports:
-  - protocol: TCP
-    port: 5000
+ - ports:
+   - protocol: TCP
+     port: 5000

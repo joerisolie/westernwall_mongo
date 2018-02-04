@@ -17,7 +17,7 @@ spec:
               protocol: "TCP"
           env:
           - name: MONGO_HOST
-            value: 'mongo'
+            value: 'mongodb'
           - name: MONGO_USERNAME
             valueFrom:
               secretKeyRef:
