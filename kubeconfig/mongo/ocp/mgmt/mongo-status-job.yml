@@ -4,12 +4,14 @@ metadata:
   name: status-mongo-db
 spec:
   schedule: "*/1 * * * *"
+  successfulJobsHistoryLimit: 3 
+  failedJobsHistoryLimit: 3
   jobTemplate:
     spec:
       template:
         metadata:
           labels:
-            parent: "mongo:latest"
+            parent: "status-mongo-db"
         spec:
           containers:
           - name: "mongo"
@@ -18,5 +20,5 @@ spec:
               - "/bin/sh"
               - "-ec"
               - |
-                mongo mongo-client:27017 rs.status()"
-          restartPolicy: OnFailure
+                mongo mongo-client:27017 --eval 'rs.status()'
+          restartPolicy: Never
