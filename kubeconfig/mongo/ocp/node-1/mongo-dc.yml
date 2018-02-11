@@ -11,7 +11,7 @@ spec:
     spec:
       containers:
         - name: "mongo"
-          image: "mongo:latest"
+          image: "westernwall/mongo:latest"
           ports:
             - name: mongo-port
               containerPort: 27017
@@ -32,6 +32,14 @@ spec:
   replicas: 1
   triggers:
     - type: "ConfigChange"
+    - type: "ImageChange"
+      imageChangeParams:
+        automatic: true
+        containerNames:
+          - "mongo"
+        from:
+          kind: "ImageStreamTag"
+          name: "mongo:latest"
   strategy:
     type: "Recreate"
   revisionHistoryLimit: 2

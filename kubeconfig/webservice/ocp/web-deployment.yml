@@ -10,7 +10,7 @@ spec:
     spec:
       containers:
         - name: "westernwall-web"
-          image: "new-westernwall/westernwall-mongo:latest"
+          image: "westernwall/westernwall-mongo:latest"
           ports:
             - name: http-server
               containerPort: 5000

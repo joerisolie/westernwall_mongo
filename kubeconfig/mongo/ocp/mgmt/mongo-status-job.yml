@@ -13,7 +13,7 @@ spec:
         spec:
           containers:
           - name: "mongo"
-            image: "mongo:latest"
+            image: "docker-registry.default.svc:5000/westernwall/mongo:latest"
             command:
               - "/bin/sh"
               - "-ec"
