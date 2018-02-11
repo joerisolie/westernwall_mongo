@@ -10,24 +10,24 @@ spec:
     spec:
       containers:
         - name: "westernwall-web"
-          image: "westernwall/westernwall-mongo:latest"
+          image: "new-westernwall/westernwall-mongo:latest"
           ports:
             - name: http-server
               containerPort: 5000
               protocol: "TCP"
           env:
           - name: MONGO_HOST
-            value: 'mongodb'
-          - name: MONGO_USERNAME
-            valueFrom:
-              secretKeyRef:
-                name: mongo-secret
-                key: username
-          - name: MONGO_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: mongo-secret
-                key: password
+            value: 'mongo-client'
+#          - name: MONGO_USERNAME
+#            valueFrom:
+#              secretKeyRef:
+#                name: mongo-secret
+#                key: username
+#          - name: MONGO_PASSWORD
+#            valueFrom:
+#              secretKeyRef:
+#                name: mongo-secret
+#                key: password
   replicas: 3
   triggers:
     - type: "ConfigChange"

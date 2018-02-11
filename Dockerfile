@@ -9,7 +9,10 @@ RUN apt-get update && apt-get install -y \
 	python3-dev\
 	iproute2\
 	gcc
+
 COPY ./source /source
+RUN useradd -d /source cuser && chown -R cuser:root /source
+USER cuser
 WORKDIR /source
 
 #Next line only for "dirty" source

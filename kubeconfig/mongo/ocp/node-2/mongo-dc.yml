@@ -1,0 +1,38 @@
+kind: "DeploymentConfig"
+apiVersion: "v1"
+metadata:
+  name: "mongo-2"
+spec:
+  template:
+    metadata:
+      labels:
+        name: "mongo-2"
+        app: "mongo"
+    spec:
+      containers:
+        - name: "mongo"
+          image: "mongo:latest"
+          ports:
+            - name: mongo-port
+              containerPort: 27017
+              protocol: "TCP"
+          command:
+            - mongod
+          args:
+            - "--bind_ip_all"
+            - "--replSet"
+            - "rs0"
+          volumeMounts:
+          - name: datadir
+            mountPath: /data/db
+      volumes:
+        - name: datadir
+          persistentVolumeClaim:
+            claimName: mongo-2
+  replicas: 1
+  triggers:
+    - type: "ConfigChange"
+  strategy:
+    type: "Recreate"
+  revisionHistoryLimit: 2
+  minReadySeconds: 0

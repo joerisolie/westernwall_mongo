@@ -48,17 +48,17 @@ def index(do_refresh=False):
     coll = db['messages']
 
     if form.validate_on_submit():
-        try:
-            flash("User %s posted message %s" % (form.name.data, form.message.data))
-            res_color = "#FFFFFF"
-            for c in colors:
-                if form.color.data == c[0]:
-                    res_color = c[1]
-            m = Message(form.name.data,form.message.data,3,0,res_color)
-            random_message = list(coll.aggregate([{ "$sample": {"size": 1}}]))
-            coll.update_one({'_id': random_message[0].get('_id')}, {"$set": m.asDict()}, upsert=False)
-        except Exception:
-            flash("Something went wrong while posting your message.", 'error')
+        #try:
+        res_color = "#FFFFFF"
+        for c in colors:
+            if form.color.data == c[0]:
+                res_color = c[1]
+        m = Message(form.name.data,form.message.data,3,0,res_color)
+        random_message = list(coll.aggregate([{ "$sample": {"size": 1}}]))
+        coll.update_one({'_id': random_message[0].get('_id')}, {"$set": m.asDict()}, upsert=False)
+        flash("User %s posted message %s" % (form.name.data, form.message.data))
+        #except Exception:
+        #    flash("Something went wrong while posting your message.", 'error')
 
     messages = []
     try:
@@ -109,7 +109,11 @@ def dbmigrate():
         else:
             #Read all messages, change DB and write them to the new db
             messages = coll.find()
-            app.mongo_client = pymongo.MongoClient(host=form.hostname.data, port=int(form.port.data))
+            #app.mongo_client = pymongo.MongoClient(host=form.hostname.data, port=int(form.port.data))
+            app.mongo_client = pymongo.MongoClient(host=form.hostname.data,port=int(form.port.data),
+                                                   username=os.getenv('MONGO_USERNAME', None),
+                                                   password=os.getenv('MONGO_PASSWORD', None), replicaSet='rs0',
+                                                   readPreference='secondaryPreferred')
             try:
                 app.mongo_client['westernwall']['messages'].delete_many({})
                 app.mongo_client['westernwall']['messages'].insert_many(messages)

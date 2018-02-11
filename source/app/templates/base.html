@@ -40,10 +40,14 @@
 -->	<div class="container">
 		<div class="row">
 			<div class="col-md-8">
-				{% with messages = get_flashed_messages() %}
-				{% for message in messages %}
-      				<div class="alert alert-info" role="alert">
-        				{{ message }}	
+				{% with messages = get_flashed_messages(with_categories=true) %}
+				{% for category,message in messages %}
+                                {% if category == 'error' %}
+      				<div class="alert alert-danger" role="alert">
+        	                {% else %}
+				<div class="alert alert-info" role="alert">
+				{% endif %} 
+					{{ message }}	
       				</div>
         			{% endfor %}
 				{% endwith %}

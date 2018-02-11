@@ -1,0 +1,12 @@
+ApiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+ name: mongo-1
+ annotations:
+   volume.beta.kubernetes.io/storage-class: ceph
+spec:
+ accessModes:
+  - ReadWriteOnce
+ resources:
+   requests:
+     storage: 1Gi
