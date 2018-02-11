@@ -15,5 +15,5 @@ spec:
         command:
         - "mongo"
         - "mongo-client:27017"
-        - "rs.initiate({_id : ""rs0"", members: [{ _id: 0, host: ""ocp-ports.nithralas.local:30017"" },{ _id: 1, host: ""ocp-ports.nithralas.local:30018"" },{ _id: 2, host: ""ocp-ports.nithralas.local:30019"" }]})"]
+        - "rs.initiate({_id : ""rs0"", members: [{ _id: 0, host: ""ocp-ports.nithralas.local:30017"" },{ _id: 1, host: ""ocp-ports.nithralas.local:30018"" },{ _id: 2, host: ""ocp-ports.nithralas.local:30019"" }]})"
       restartPolicy: OnFailure
