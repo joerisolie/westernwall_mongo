@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: status-mongo-db
 spec:
-  schedule: "*/1 * * * *"
+  schedule: "*/10 * * * *"
   successfulJobsHistoryLimit: 3 
   failedJobsHistoryLimit: 3
   jobTemplate:
