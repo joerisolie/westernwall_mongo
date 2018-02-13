@@ -15,6 +15,13 @@ spec:
             - name: http-server
               containerPort: 5000
               protocol: "TCP"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "100Mi"
+            limits:
+              cpu: "100m"
+              memory: "100Mi"
           env:
           - name: MONGO_HOST
             value: 'mongo-client'
@@ -28,6 +35,18 @@ spec:
               secretKeyRef:
                 name: mongo-secret
                 key: password
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 5
   replicas: 3
   triggers:
     - type: "ConfigChange"
