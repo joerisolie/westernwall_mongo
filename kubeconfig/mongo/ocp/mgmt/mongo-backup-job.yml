@@ -1,0 +1,44 @@
+apiVersion: batch/v2alpha1
+kind: CronJob
+metadata:
+  name: status-mongo-db
+spec:
+  schedule: "*/60 * * * *"
+  successfulJobsHistoryLimit: 3 
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            parent: "status-mongo-db"
+        spec:
+          containers:
+          - name: "mongo"
+            image: "docker-registry.default.svc:5000/westernwall/mongo:latest"
+            resources:
+              requests:
+                cpu: "100m"
+                memory: "100Mi"
+              limits:
+                cpu: "100m"
+                memory: "100Mi"
+            env:
+            - name: MONGO_HOST
+              value: 'mongo-client'
+            - name: MONGO_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: username
+            - name: MONGO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: password
+            command:
+              - "/bin/sh"
+              - "-ec"
+              - |
+                mongodump -h mongo-client:27017 -u $MONGO_USERNAME -p $MONGO_PASSWORD --gzip --archive="/" --oplog
+          restartPolicy: Never
