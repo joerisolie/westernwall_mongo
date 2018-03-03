@@ -1,0 +1,12 @@
+ApiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+ name: mongo-backup
+ annotations:
+   volume.beta.kubernetes.io/storage-class: ceph
+spec:
+ accessModes:
+  - ReadWriteOnce
+ resources:
+   requests:
+     storage: 5Gi

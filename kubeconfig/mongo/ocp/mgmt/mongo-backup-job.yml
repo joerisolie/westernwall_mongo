@@ -1,9 +1,9 @@
 apiVersion: batch/v2alpha1
 kind: CronJob
 metadata:
-  name: status-mongo-db
+  name: backup-mongo-db
 spec:
-  schedule: "*/60 * * * *"
+  schedule: "0 * * * *"
   successfulJobsHistoryLimit: 3 
   failedJobsHistoryLimit: 3
   jobTemplate:
@@ -11,7 +11,7 @@ spec:
       template:
         metadata:
           labels:
-            parent: "status-mongo-db"
+            parent: "backup-mongo-db"
         spec:
           containers:
           - name: "mongo"
@@ -40,5 +40,12 @@ spec:
               - "/bin/sh"
               - "-ec"
               - |
-                mongodump -h mongo-client:27017 -u $MONGO_USERNAME -p $MONGO_PASSWORD --gzip --archive="/" --oplog
+                mongodump -h mongo-client:27017 -u $MONGO_USERNAME -p $MONGO_PASSWORD --gzip --archive="/archive/backup-westernwall-$(date +"%FT%T").tar.gz" --oplog
+            volumeMounts:
+            - name: archivedir
+              mountPath: /archive
+          volumes:
+            - name: archivedir
+              persistentVolumeClaim:
+                claimName: mongo-backup
           restartPolicy: Never
