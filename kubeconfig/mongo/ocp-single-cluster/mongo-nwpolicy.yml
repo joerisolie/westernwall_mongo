@@ -1,0 +1,12 @@
+kind: NetworkPolicy
+apiVersion: extensions/v1beta1
+metadata:
+  name: allow-mongo-connections
+spec:
+  podSelector:
+    matchLabels:
+      app: mongo
+  ingress:
+  - ports:
+    - protocol: TCP
+      port: 27017

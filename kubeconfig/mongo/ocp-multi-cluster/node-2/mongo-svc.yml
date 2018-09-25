@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-2
+  labels:
+    name: mongo-2
+spec:
+  type: NodePort
+  ports:
+    - name: mongo-port
+      port: 27017
+      targetPort: 27017
+      nodePort: 31002
+  selector:
+    name: mongo-2

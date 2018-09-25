@@ -23,12 +23,11 @@ spec:
           - "/bin/sh"
           - "-ec"
           - |
-            mongo mongo-client:27017 --eval 'rs.initiate({_id : "rs0", members: [{ _id: 0, host: "ocp-ports.nithralas.local:30017" },{ _id: 1, host: "ocp-ports.nithralas.local:30018" },{ _id: 2, host: "ocpb-ports.nithralas.local:30019" }]})'
+            mongo mongo-client:27017 --eval 'rs.initiate({_id : "rs0", members: [{ _id: 0, host: "mongo-0.mongo.westernwall.svc.cluster.local:27017" },{ _id: 1, host: "mongo-1.mongo.westernwall.svc.cluster.local:27017" },{ _id: 2, host: "mongo-2.mongo.westernwall.svc.cluster.local:27017" }]})'
             echo 'cfg = rs.conf()' > /configdb.js
             echo 'cfg.members[2].priority = 0.5' >> /configdb.js
             echo 'rs.reconfig(cfg)' >> /configdb.js
             echo 'db = connect("mongo-client:27017/admin");' >> /configdb.js
             echo 'db.createUser({user: "user", pwd: "adminpassword", roles: [{ role: "userAdminAnyDatabase", db: "admin" }]});' >> /configdb.js
-            #chmod +rwx /configdb.js && cd /
             mongo mongo-client:27017 /configdb.js
       restartPolicy: OnFailure

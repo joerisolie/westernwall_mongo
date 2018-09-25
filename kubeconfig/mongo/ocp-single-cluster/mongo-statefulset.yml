@@ -1,0 +1,48 @@
+kind: "StatefulSet"
+apiVersion: "apps/v1"
+metadata:
+  name: "mongo"
+spec:
+  selector:
+    matchLabels:
+      app: mongo
+  serviceName: "mongo"
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        name: "mongo"
+        app: "mongo"
+    spec:
+      containers:
+        - name: "mongo"
+          image: "docker-registry.default.svc:5000/westernwall/mongo:latest"
+          ports:
+            - name: mongo-port
+              containerPort: 27017
+              protocol: "TCP"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "100Mi"
+            limits:
+              cpu: "100m"
+              memory: "100Mi"
+          command:
+            - "/bin/sh"
+            - "-ec"
+            - |
+              sleep 30
+              mongod --bind_ip_all --replSet rs0
+          volumeMounts:
+          - name: datadir
+            mountPath: /data/db
+  volumeClaimTemplates:
+    - metadata:
+        name: datadir
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: "ceph"
+        resources:
+          requests:
+            storage: 1Gi

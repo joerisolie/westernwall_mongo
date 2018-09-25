@@ -1,0 +1,33 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: initiate-mongo-db
+spec:
+  parallelism: 1
+  completions: 1
+  template:
+    metadata:
+      name: initiate-mongo-db
+    spec:
+      containers:
+      - name: "mongo"
+        image: "docker-registry.default.svc:5000/westernwall/mongo:latest"
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "100Mi"
+          limits:
+            cpu: "100m"
+            memory: "100Mi"
+        command:
+          - "/bin/sh"
+          - "-ec"
+          - |
+            mongo mongo-client:27017 --eval 'rs.initiate({_id : "rs0", members: [{ _id: 0, host: "10.0.0.100:31001" },{ _id: 1, host: "10.0.0.100:31002" },{ _id: 2, host: "10.0.0.100:31003" }]})'
+            echo 'cfg = rs.conf()' > /configdb.js
+            echo 'cfg.members[2].priority = 0.5' >> /configdb.js
+            echo 'rs.reconfig(cfg)' >> /configdb.js
+            echo 'db = connect("mongo-client:27017/admin");' >> /configdb.js
+            echo 'db.createUser({user: "user", pwd: "adminpassword", roles: [{ role: "userAdminAnyDatabase", db: "admin" }]});' >> /configdb.js
+            mongo mongo-client:27017 /configdb.js
+      restartPolicy: OnFailure

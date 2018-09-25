@@ -1,0 +1,12 @@
+kind: NetworkPolicy
+apiVersion: extensions/v1beta1
+metadata:
+  name: allow-ui-mongoclient-connections
+spec:
+  podSelector:
+    matchLabels:
+      app: mongoclient
+  ingress:
+  - ports:
+    - protocol: TCP
+      port: 3000

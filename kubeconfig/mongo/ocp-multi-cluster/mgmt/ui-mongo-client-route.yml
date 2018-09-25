@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Route
+metadata:
+  name: ui-mongo-client
+spec:
+  to:
+    kind: Service
+    name: ui-mongo-client

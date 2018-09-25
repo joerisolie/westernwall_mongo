@@ -7,10 +7,11 @@ spec:
     metadata:
       labels:
         name: "westernwall-web"
+        role: "web"
     spec:
       containers:
         - name: "westernwall-web"
-          image: "westernwall/westernwall-mongo:latest"
+          image: "westernwall/westernwall:latest"
           ports:
             - name: http-server
               containerPort: 5000
@@ -57,7 +58,7 @@ spec:
           - "westernwall-web"
         from:
           kind: "ImageStreamTag"
-          name: "westernwall-mongo:latest"
+          name: "westernwall:latest"
   strategy:
     type: "Rolling"
   paused: false

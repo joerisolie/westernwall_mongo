@@ -24,11 +24,11 @@ spec:
               cpu: "100m"
               memory: "100Mi"
           command:
-            - mongod
-          args:
-            - "--bind_ip_all"
-            - "--replSet"
-            - "rs0"
+            - "/bin/sh"
+            - "-ec"
+            - |
+              sleep 30
+              mongod --bind_ip_all --replSet rs0
           volumeMounts:
           - name: datadir
             mountPath: /data/db

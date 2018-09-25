@@ -1,0 +1,40 @@
+kind: "DeploymentConfig"
+apiVersion: "v1"
+metadata:
+  name: "ui-mongo-client"
+spec:
+  template:
+    metadata:
+      labels:
+        name: "ui-mongo-client"
+        app: "mongoclient"
+    spec:
+      containers:
+        - name: "mongoclient"
+          image: "be-pnu-dev-westernwall/mongoclient:latest"
+          ports:
+            - name: web
+              containerPort: 3000
+              protocol: "TCP"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "100Mi"
+            limits:
+              cpu: "100m"
+              memory: "100Mi"
+  replicas: 1
+  triggers:
+    - type: "ConfigChange"
+    - type: "ImageChange"
+      imageChangeParams:
+        automatic: true
+        containerNames:
+          - "mongoclient"
+        from:
+          kind: "ImageStreamTag"
+          name: "mongoclient:latest"
+  strategy:
+    type: "Rolling"
+  revisionHistoryLimit: 2
+  minReadySeconds: 0
